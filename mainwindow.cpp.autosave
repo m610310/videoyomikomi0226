@@ -1,0 +1,62 @@
+#include "mainwindow.h"
+#include "ui_mainwindow.h"
+
+//opencv include
+
+#include <opencv2/opencv.hpp>
+
+MainWindow::MainWindow(QWidget *parent) :
+    QMainWindow(parent),
+    ui(new Ui::MainWindow)
+{
+    ui->setupUi(this);
+}
+
+MainWindow::~MainWindow()
+{
+    delete ui;
+}
+
+void MainWindow::on_pushButton_clicked()
+{
+    file_name = QFileDialog::getOpenFileName(this,
+                                             tr("file"),"",
+                                             tr("mp4(*.mp4);;AllFiles(*)"));
+
+    ui -> lineEdit -> setText(file_name);
+
+
+    //(1) pathの文字列から(ビデオファイルを読み込んで）cv::Matの配列に各フレームの画像を格納
+
+    //(1.1)cv::videocaptureをつくってファイルパスを入れる
+    cv::VideoCapture cap;
+    cap.open(file_name);
+
+    //(1.2)get movie file info
+    int videowidth=cap.get(CV_CAP_PROP_FRAME_WIDTH);
+    int videoheight=cap.get(CV_CAP_PROP_FRAME_HEIGHT);
+    int videorate=cap.get(CV_CAP_PROP_FPS);
+    int videoTotalFrames=cap.get(CV_CAP_PROP_FRAME_COUNT);
+
+    //(1.3)画像を格納するcv::Matの配列を作る
+    std::vector <cv::Mat> frameAquision;
+    //配列の大きさを指定 videototalframesの数だけ作る。
+    //　frameaquision[0] frameaquision[1] frameaquision[2] ..... frameaquision[videototalframes -1]
+    frameAquision.resize(videoTotalFrames);
+
+    //(1.4)get frame;
+    for (int framenum = 0; framenum < videoTotalFrames-1; framenum ++){
+
+        cap.set(CV_CAP_PROP_POS_FRAMES,framenum); //frameナンバー指定
+        cv::Mat frame; // cv::Mat
+        cap >> frame; // 取得した画像をframeへ
+        //frameに入った画像をあらかじめつくったframeaquisionに流し込む
+        frameAquision[framenum] = frame.clone();//深いコピー
+
+    }
+    //ココマデデビデオのパスを得て、そこからｃｖ：：Ｍａｔの配列frameaquisionに各フレームの画像を格納できた。
+    /*
+      (1)を関数化してクラスにして別ファイルに移す（宿題）
+      */
+}
+
